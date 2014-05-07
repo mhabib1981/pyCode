@@ -1,6 +1,6 @@
 import re
 import os
-from urllib2 import Request, urlopen, URLError
+from urllib2 import URLError, urlopen, Request 
 from optparse import OptionParser
 
 options=OptionParser(usage='%prog [options]', description='Parse URLs from McAfeeNSM Console Raw Data')
@@ -15,7 +15,7 @@ def input_check():
 		return options.print_help();
 	else:
 		grep_urls()
-		response_check()
+		#http_response_check()
 
 def grep_urls():
 	if os.path.exists(sourcefile):
@@ -27,26 +27,31 @@ def grep_urls():
 				xl=re.sub(r'^(.*)HTTP URI == ',"",line);
 	                	xr=re.sub(r';(.*)',"",xl);
 				if "n/a" not in xr:
-					refined_data="http://" + src_ip[0] + xr;
+					refined_data="http://" + src_ip[0] + xr
+					url_check=http_response_check()
+					#print str(url_check)
+					output=refined_data.strip('\n') + ' => ' + str(url_check) + '\n'
 					#http_response=urllib2.urlopen(refined_data);
 					#if http_response.code == 200:
-						#print http_response.info()
-
-					targetfile.write(refined_data)
+					#print refined_data
+					targetfile.write(output)
 
 	else:
 		print "File Not Found!"
 
 
-def response_check():
-	with open(targetfile_name, 'r') as urls:
+def http_response_check():
+	with open(targetfile_name,'r') as urls:
 		for url in urls:
 			http_parse=Request(url)
 			try:
-			    urlopen(http_parse)
-			
+			    http_response=urlopen(http_parse)
 			except URLError, http_error:
-				print http_error.code
+			    return http_error.reason
 			
+				
+				
 			
+			    
+		
 input_check()
