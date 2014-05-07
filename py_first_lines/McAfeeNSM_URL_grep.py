@@ -35,10 +35,8 @@ def grep_urls():
 					#if http_response.code == 200:
 					#print refined_data
 					targetfile.write(output)
-
 	else:
 		print "File Not Found!"
-
 
 def http_response_check():
 	with open(targetfile_name,'r') as urls:
@@ -47,11 +45,5 @@ def http_response_check():
 			try:
 			    http_response=urlopen(http_parse)
 			except URLError, http_error:
-			    return http_error.reason
-			
-				
-				
-			
-			    
-		
+			    return http_error.reason 
 input_check()
