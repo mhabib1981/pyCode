@@ -1,14 +1,15 @@
 import re
 import os
 import hashlib
-import socket
+from socket import error as sockerr
+import errno
 from urllib2 import URLError, HTTPError, urlopen, Request 
 from httplib import BadStatusLine
 from optparse import OptionParser
 
-options=OptionParser(usage='%prog [options]', description='Parse URLs from McAfeeNSM Console RAWData')
-options.add_option("-s", "--source-file", type="string", action="store", dest="filename", help="locate the SourceFile to be parsed [required]")
+options=OptionParser(usage='%prog [options]', description='Parse URLs from McAfeeNSM Console RAW Data')
 options.set_usage("McAfeeNSM_URL_Parser.py -s <sourcefile>")
+options.add_option("-s", "--source-file", type="string", action="store", dest="filename", help="locate the SourceFile to be parsed [required]")
 options.add_option("-e", "--file-extension", type="string", action="store", dest="filetype", default=".js", help="define file extension [default=%default]" )
 #options.add_option("-c", "--check-response", type="int", action="store", dest="verify",default=1)
 opts, args = options.parse_args()
@@ -41,7 +42,7 @@ def main():
 				refined_data=grep_urls(line)
 				targetfile.write(refined_data)
 				query=http_response_check(refined_data)
-				if "None" in str(query) and ".js" in refined_data:
+				if "None" in str(query) and ext in refined_data:
 					http_fetch(refined_data)
 					hash_file=filename_gen(refined_data)
 					hash_gen(hash_file)
@@ -58,10 +59,13 @@ def http_response_check(url):
 		return error.reason
 	except HTTPError as  error:
 		return error.reason
+	except sockerr as error:
+		if error.errno != errno.ECONNRESET:
+			return error
 	except BadStatusLine as error:  
-		print error
+		return error
 	except socket.timeout as error:
-		print error
+		return error
 
 def filename_gen(url):
          scriptfile_name=(url.split('/')[-1]).strip('\n')
