@@ -1,11 +1,13 @@
 import re
 import os
 import hashlib
+import imp
 from socket import error as sockerr
 import errno
 from urllib2 import URLError, HTTPError, urlopen, Request 
 from httplib import BadStatusLine
 from optparse import OptionParser
+wepawet=imp.load_source('wepawet','/root/py_code/wepawet_check.py')
 
 options=OptionParser(usage='%prog [options]', description='Parse URLs from McAfeeNSM Console RAW Data')
 options.set_usage("McAfeeNSM_URL_Parser.py -s <sourcefile>")
@@ -44,8 +46,9 @@ def main():
 				query=http_response_check(refined_data)
 				if "None" in str(query) and ext in refined_data:
 					http_fetch(refined_data)
+					mal_check(refined_data)
 					hash_file=filename_gen(refined_data)
-					hash_gen(hash_file)
+					hash_value=hash_gen(hash_file)
 												
 	else:
 		print "File Not Found!"
@@ -54,7 +57,7 @@ def main():
 def http_response_check(url):
 	http_parse=Request(url)
 	try:
-	    http_open=urlopen(http_parse)
+	    urlopen(http_parse)
 	except URLError as error:		
 		return error.reason
 	except HTTPError as  error:
@@ -63,8 +66,6 @@ def http_response_check(url):
 		if error.errno != errno.ECONNRESET:
 			return error
 	except BadStatusLine as error:  
-		return error
-	except socket.timeout as error:
 		return error
 
 def filename_gen(url):
@@ -84,6 +85,14 @@ def hash_gen(inFile):
 		while len(buf)> 0:
 			sha1_hash_gen.update(buf)
 			buf=file.read(8192)
-		print sha1_hash_gen.hexdigest()
+		return sha1_hash_gen.hexdigest()
+
+def mal_check(url):
+	wepawet_submit=wepawet.wepawet_submit(url)
+	wepawet_hash=re.findall(r'>(.*)<', wepawet_submit)
+	#print wepawet_hash[0]
+	if len(wepawet_hash[0]) == 32:
+		wepawet_result=wepawet.wepawet_query(wepawet_hash[0])
+		print wepawet_result
 		
 input_check()
