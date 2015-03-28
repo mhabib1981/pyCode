@@ -12,12 +12,14 @@ def get_max(x):
 	for letter in alpha_set:
 		i=alpha_set.index(letter)
 		rep_count[i]=(x.count(letter))
-	return max(rep_count.values())
+		max_val=max(rep_count.values())
+	return max_val
+	
 	
 
 def get_key(value,alpha):
 	for key in rep_count:
-		if rep_count[key]==value:
+		if rep_count[key] == value:
 			return abs(key-alpha_set.index(alpha))
 
 def dec_text(input,key):
